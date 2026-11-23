@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="Учебный журнал обработки сообщений о подмене бренда для команды KIB-08.">
+  <title>Реестр обращений</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./desk-model.js"></script>
+  <script defer src="./demo.js"></script>
+  <script defer src="./desk.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="identity"><span class="mark" aria-hidden="true"><span></span></span><strong>Реестр обращений</strong></div>
+      <nav aria-label="Разделы">
+        <button type="button" data-view="journal" aria-current="page"><span class="icon journal-icon" aria-hidden="true"></span><span class="nav-label">Обращения</span></button>
+        <button type="button" data-view="channels"><span class="icon link-icon" aria-hidden="true"></span><span class="nav-label">Официальные каналы</span></button>
+        <button type="button" data-view="about"><span class="icon info-icon" aria-hidden="true">i</span><span class="nav-label">О проекте</span></button>
+      </nav>
+      <div class="sidebar-footer"><span class="workspace-mark" aria-hidden="true">КА</span><div><strong id="workspace-name"></strong><span class="workspace-detail">Учебная компания</span></div></div>
+    </aside>
+
+    <div class="app-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Защита бренда</span><span id="current-section">Обращения</span></div>
+        <span class="training">Учебный стенд</span>
+      </header>
+
+      <main id="main" class="shell">
+        <section id="journal-view" aria-labelledby="journal-title">
+          <header class="page-head">
+            <div><h1 id="journal-title" tabindex="-1">Обращения</h1><p class="intro">Сообщения о возможной подмене бренда</p></div>
+            <button type="button" id="add-case" class="button secondary"><span aria-hidden="true">+</span> Заполнить всё сразу</button>
+          </header>
+
+          <div class="overview-grid">
+            <section class="intake surface" aria-labelledby="intake-title">
+              <h2 id="intake-title">Быстрый прием</h2>
+              <form id="quick-form" novalidate>
+                <label class="field" for="quick-text">Ссылка или текст сообщения</label>
+                <textarea id="quick-text" rows="2" maxlength="800" placeholder="Например, прислали профиль с названием магазина"></textarea>
+                <div class="intake-actions">
+                  <div class="intake-file">
+                    <label class="button secondary attach-button"><span class="icon clip-icon" aria-hidden="true"></span>Прикрепить снимок<input id="quick-file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Прикрепить снимок"></label>
+                    <button type="button" id="remove-file" class="icon-button file-remove" aria-label="Убрать снимок" hidden>×</button>
+                    <span id="file-caption" class="file-caption" aria-live="polite"></span>
+                  </div>
+                  <button id="save-quick" class="button primary" type="submit">Сохранить случай</button>
+                </div>
+                <p id="quick-error" class="notice error" role="alert" hidden></p>
+              </form>
+            </section>
+            <section class="overview surface" aria-labelledby="overview-title">
+              <h2 id="overview-title">Сводка по журналу</h2>
+              <div id="overview-counts" role="group" aria-label="Быстрые фильтры по статусу"></div>
+            </section>
+          </div>
+          <p id="message" class="notice" role="status" hidden></p>
+
+          <section class="journal surface" aria-labelledby="queue-title">
+            <div class="journal-head">
+              <div class="journal-name"><h2 id="queue-title" tabindex="-1">Журнал случаев</h2><span id="case-count" aria-label="Количество записей"></span></div>
+              <div class="journal-search">
+                <label class="search"><span class="icon search-icon" aria-hidden="true"></span><input id="search" type="search" placeholder="Поиск по журналу" aria-label="Поиск по случаям"></label>
+                <label class="platform-filter"><select id="platform-filter" aria-label="Площадка"><option value="all">Все площадки</option><option value="missing">Без площадки</option></select></label>
+              </div>
+            </div>
+            <div id="summary" class="summary" role="group" aria-label="Фильтр по статусу"></div>
+            <div class="table-wrap">
+              <table class="case-table" aria-label="Журнал случаев">
+                <thead>
+                  <tr>
+                    <th scope="col">Случай</th>
+                    <th scope="col">Статус</th>
+                    <th scope="col" class="table-platform">Площадка</th>
+                    <th scope="col" class="table-date" aria-sort="descending"><button id="sort-date" type="button" aria-label="Изменить сортировку по дате">Обнаружен <span id="sort-arrow" aria-hidden="true">↓</span></button></th>
+                    <th scope="col" class="table-chevron" aria-label="Открыть карточку"></th>
+                  </tr>
+                </thead>
+                <tbody id="case-list"></tbody>
+              </table>
+            </div>
+            <p id="empty-list" class="empty" hidden></p>
+          </section>
+        </section>
+
+        <section id="channels-view" hidden aria-labelledby="channels-title">
+          <header class="page-head"><h1 id="channels-title" tabindex="-1">Официальные каналы</h1><p class="intro">Адреса организации «<span id="channel-company"></span>» для сверки с сообщениями.</p></header>
+          <div class="surface channel-list" id="channels"></div>
+        </section>
+
+        <section id="about-view" hidden aria-labelledby="about-title">
+          <header class="page-head"><h1 id="about-title" tabindex="-1">О проекте</h1></header>
+          <article class="surface about">
+            <h2>Как разобрать сообщение</h2>
+            <ol>
+              <li>Сохраните вымышленную ссылку, текст сообщения или учебный снимок.</li>
+              <li>Заполните сведения о ресурсе. Сверьте адрес и сохраните свое решение.</li>
+              <li>Скачайте учебное обращение в TXT. Снимок доступен отдельным файлом.</li>
+            </ol>
+            <h2>Данные стенда</h2>
+            <p>Команда KIB-08 подготовила 10 вымышленных случаев. Журнал хранится в этом браузере. Проверка выполняется вручную. Сообщения на площадки из приложения не отправляются.</p>
+          </article>
+        </section>
+        <noscript><p class="notice error">Для работы журнала включите JavaScript в браузере.</p></noscript>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="case-drawer" class="drawer" aria-labelledby="case-title">
+    <div id="details"></div>
+  </dialog>
+
+  <dialog id="evidence-dialog" aria-labelledby="evidence-title" class="image-dialog">
+    <div class="image-dialog-head"><h2 id="evidence-title">Учебный снимок</h2><button type="button" class="icon-button" id="close-evidence" aria-label="Закрыть снимок">×</button></div>
+    <img id="expanded-evidence" alt="">
+  </dialog>
+
+  <dialog id="new-dialog" aria-labelledby="new-title">
+    <form id="new-form" class="dialog-form" method="dialog" novalidate>
+      <div class="dialog-top">
+        <div><h2 id="new-title">Новый случай</h2><p>Используйте вымышленные адреса и учебные снимки.</p></div>
+        <button type="button" class="icon-button" id="close-dialog" aria-label="Закрыть форму">×</button>
+      </div>
+      <label class="field">Название <input name="title" required maxlength="80" placeholder="Например, профиль с именем магазина" autofocus></label>
+      <div class="field-grid">
+        <label class="field">Площадка <select name="platform" required><option value="">Выберите площадку</option></select></label>
+        <label class="field">Тип ресурса <select name="kind" required><option value="">Выберите тип</option></select></label>
+      </div>
+      <label class="field">Адрес ресурса <input name="url" type="url" required maxlength="400" placeholder="https://lenta.example/p/uchebnyj-profil"><small id="domain-hint">Выберите площадку, чтобы увидеть ее учебный домен.</small></label>
+      <label class="field">Дата обнаружения <input name="date" type="date" required></label>
+      <label class="field">Наблюдение <textarea name="details" rows="3" required maxlength="800" placeholder="Что видно на учебном снимке?"></textarea></label>
+      <label class="field">Учебный снимок <input name="evidence" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPEG или WebP до 1 МБ.</small></label>
+      <p class="notice error" id="new-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button type="button" id="cancel-dialog" class="button secondary">Отмена</button><button type="submit" class="button primary">Добавить в журнал</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
